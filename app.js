@@ -1,33 +1,43 @@
-const fs = require('fs');
+// configuration file (todo lo que tiene que ver con express)
 const express = require('express');
+const morgan = require('morgan');
+
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorController');
+const tourRouter = require('./routes/tourRoutes');
+const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
-/* app.get('/', (req, res) => {
-  res
-    .status(200)
-    .json({ message: 'Hello from the server side', app: 'Natours' });
+// 1: MIDDLEWARES
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+app.use(express.json());
+app.use(express.static(`${__dirname}/public`));
+
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
+  next();
 });
 
-app.post('/', (req, res) => {
-  res.send('You can post to this endpoint...');
-}); */
+// 3: ROUTES
+/* app.get('/api/v1/tours', getAllTours);
+app.get('/api/v1/tours/:id', getTour);
+app.post('/api/v1/tours', createTour);
+app.patch('/api/v1/tours/:id', updateTour);
+app.delete('/api/v1/tours/:id', deleteTour); */
 
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
-);
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
 
-app.get('/api/v1/tours', (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    results: tours.length, //este campo no es necesario, solo esta bueno pornerlo en caso de devolver un arreglo
-    data: { tours },
-  });
+// si la url es invalida:
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
-app.post('/api/v1/tours', (req, res) => {});
+app.use(globalErrorHandler);
 
-const port = 3000;
-app.listen(port, () => {
-  console.log(`App running on port ${port}...`);
-});
+// START SERVER
+
+module.exports = app;
