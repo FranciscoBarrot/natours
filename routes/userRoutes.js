@@ -6,15 +6,21 @@ const router = express.Router();
 
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
+router.get('/logout', authController.logout);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
 // protect all router after this middleware
 router.use(authController.protect);
 
-router.patch('/updatePassword', authController.updatePassword);
+router.patch('/updateMyPassword', authController.updatePassword);
 router.get('/me', userController.getMe, userController.getUser);
-router.patch('/updateMe', userController.updateMe);
+router.patch(
+  '/updateMe',
+  userController.uploadUserPhoto,
+  userController.resizeUserPhoto,
+  userController.updateMe
+);
 // realmente no se está eliminando nada, pero al no poderse acceder mas, esta ok ponerlo asi
 router.delete('/deleteMe', userController.deleteMe);
 
