@@ -12,7 +12,7 @@ export const bookTour = async (tourId) => {
       mode: 'no-cors',
     });
     const session = await res.json();
-    console.log(session);
+    /* console.log(session); */
     // 2) create checkout form + chanre credit card
     await stripe.redirectToCheckout({ sessionId: session.session.id });
   } catch (err) {
